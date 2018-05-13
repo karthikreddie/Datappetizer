@@ -90,11 +90,37 @@ train_data = select(train_data, -c(Item_Type,Item_Identifier, Outlet_Identifier,
 model_basic = lm(Item_Outlet_Sales ~.,data = train_data)
 summary(model_basic)
 
-install.packages("MASS")
-library(MASS)
-model_aic = stepAIC(model_basic,direction = "both")
-summary(model_aic)
+#install.packages("MASS")
+#library(MASS)
+#model_aic = stepAIC(model_basic,direction = "both")
+#summary(model_aic)
 
+#predict on validation data
+val_data = select(val_data, -c(Item_Weight,Item_Fat_Content,Item_Type,Item_Identifier, Outlet_Identifier,Outlet_Establishment_Year, serial_num))
+preds_model <- predict(model_basic, val_data[,!(names(val_data) %in% c("Item_Outlet_Sales"))])
+summary(preds_model)
 
+library(DMwR)
+regr.eval(val_data$Item_Outlet_Sales,preds_model)
+
+summary(test)
+summary(train)
+
+#predict on test data
+test = select(test, -c(Item_Weight,Item_Fat_Content,Item_Type,Item_Identifier, Outlet_Identifier,Outlet_Establishment_Year, serial_num))
+preds_model_test <- data.frame(predict(model_basic, test[,!(names(test) %in% c("Item_Outlet_Sales"))]))
+summary(preds_model_test)
+library(DMwR)
+regr.eval(test$Item_Outlet_Sales,preds_model_test)
+
+#for checking solution
+submit = read.csv("SampleSubmission_TmnO39y.csv", header =T)
+submit = cbind(submit,preds_model_test)
+write.csv(submit, "submit.csv", row.names = F) 
+
+#This a basic model that i have built
+#Got a rank of 1094/1559 in Analytics Vidya Hackathon
+#Will be adding more code by exploring few more regression algorithms and fine tuning the variables.
+#Will strive for a first rank
 
 
